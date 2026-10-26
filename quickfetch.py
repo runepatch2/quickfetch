@@ -69,11 +69,11 @@ print(f"System swap (MB): {usedSwapMB}/{totalSwapMB} ({psutil.swap_memory().perc
 print("----- BATTERY INFO -----")
 
 if pluggedIn:
-    print("Seems like your device is plugged in. Will try to calculate time until full.")
+    print(f"Status: charging ({battery.percent()}%). Will try to calculate ETA until full.")
     timeUntilFull = chargeETA(timeUntilFull, pluggedIn)
     if timeUntilFull != None: 
         print(timeUntilFull)
     else: print("Not enough data to calculate.")
 else:
-    print("Seems like your device is unplugged! Will try to calculate ETA: ")
+    print(f"Status: discharging ({battery.percent()}%). Will try to calculate ETA until empty.")
     print(chargeETA(timeUntilEmpty, pluggedIn))
