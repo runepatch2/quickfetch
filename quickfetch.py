@@ -15,17 +15,26 @@ def secondsToHHMMSS(seconds):
     seconds = round((seconds % 3600) % 60, 2)
     return {"hours": hours, "minutes": minutes, "seconds": seconds}
 
-def chargeETA():
+def chargeETA(timeETA, pluggedIn):
+    startTime = time.time()
+    if pluggedIn: 
+        eta = battery.minutes_to_full()
+    else:
+        eta = battery.minutes_to_empty()
     try:
-        timeUntilFull = secondsToHHMMSS(battery.minutes_to_full() * 60)
+        timeETA = secondsToHHMMSS(eta * 60)
     except TypeError:
-        if input("Not enough data to calculate time until full. Do you want to wait about 60 seconds to calculate ETA? (y/n) ").strip().lower() == "y":
-            while timeUntilFull == None:
-                try: timeUntilFull = secondsToHHMMSS(battery.minutes_to_full() * 60)
+        if input("Not enough data to calculate ETA. Do you want to wait up to 30 seconds to calculate ETA? (y/n) ").strip().lower() == "y":
+            while timeETA == None:
+                if time.time() - startTime > 30:
+                    timeETA = "TOOK TOO LONG. TERMINATING LOOP"
+                    break
+                try: timeETA = secondsToHHMMSS(eta * 60)
                 except: 
                     time.sleep(1)
                     pass
-    
+    return timeETA
+                
 
 release = platform.release()
 system = platform.system()
@@ -46,6 +55,7 @@ pluggedIn = psutil.sensors_battery().power_plugged
 startPercent = 0
 percentDelta = 0.00
 timeUntilFull = None
+timeUntilEmpty = None
 
 print("----- CPU TIME INFO -----")
 print(f"User time: {userTime}")
@@ -64,17 +74,10 @@ print("----- BATTERY INFO -----")
 
 if pluggedIn:
     print("Seems like your device is plugged in. Will try to calculate time until full.")
-    try:
-        timeUntilFull = secondsToHHMMSS(battery.minutes_to_full() * 60)
-    except TypeError:
-        if input("Not enough data to calculate time until full. Do you want to wait about 60 seconds to calculate ETA? (y/n) ").strip().lower() == "y":
-            while timeUntilFull == None:
-                try: timeUntilFull = secondsToHHMMSS(battery.minutes_to_full() * 60)
-                except: 
-                    time.sleep(1)
-                    pass
+    timeUntilFull = chargeETA(timeUntilFull, pluggedIn)
+    if timeUntilFull != None: 
+        print(timeUntilFull)
+    else: print("Not enough data to calculate.")
 else:
-    print("Your device is not plugged in! Will try to calculate time until empty.")
-
-
-print(f"ETA until full: {timeUntilFull}")
+    print("Seems like your device is unplugged! Will try to calculate ETA: ")
+    print(chargeETA(timeUntilEmpty, pluggedIn))
