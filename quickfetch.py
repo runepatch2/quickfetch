@@ -1,6 +1,6 @@
 import platform
-import psutil # run 'pip install psutil' in VSC terminal.
-import battery # run 'pip install battery' in VSC terminal.
+import psutil # run 'pip3 install psutil' in VSC terminal.
+import battery # run 'pip3 install battery' in VSC terminal.
 import time
 
 
@@ -52,7 +52,12 @@ availableRAMGB = byteToGB(psutil.virtual_memory().available)
 totalRAMGB = byteToGB(psutil.virtual_memory().total)
 usedRAMGB = (totalRAMGB - availableRAMGB)
 
-pluggedIn = psutil.sensors_battery().power_plugged
+try:
+    pluggedIn = psutil.sensors_battery().power_plugged
+    device = "Laptop"
+except AttributeError:
+    device = "Desktop"
+    pass
 startPercent = 0
 percentDelta = 0.00
 timeUntilFull = None
@@ -68,12 +73,15 @@ print(f"System swap (MB): {usedSwapMB}/{totalSwapMB} ({psutil.swap_memory().perc
 
 print("----- BATTERY INFO -----")
 
-if pluggedIn:
-    print(f"Status: charging ({battery.percent()}%). Will try to calculate ETA until full.")
-    timeUntilFull = chargeETA(timeUntilFull, pluggedIn)
-    if timeUntilFull != None: 
-        print(timeUntilFull)
-    else: print("Not enough data to calculate.")
-else:
-    print(f"Status: discharging ({battery.percent()}%). Will try to calculate ETA until empty.")
-    print(chargeETA(timeUntilEmpty, pluggedIn))
+if device == "Laptop":
+    if pluggedIn:
+        print(f"Status: charging ({battery.percent()}%). Will try to calculate ETA until full.")
+        timeUntilFull = chargeETA(timeUntilFull, pluggedIn)
+        if timeUntilFull != None: 
+            print(timeUntilFull)
+        else: print("Not enough data to calculate.")
+    else:
+        print(f"Status: discharging ({battery.percent()}%). Will try to calculate ETA until empty.")
+        print(chargeETA(timeUntilEmpty, pluggedIn))
+
+print("You're using a desktop so there's currently no battery information to give. Will add in the future.")
