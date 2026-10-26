@@ -68,11 +68,6 @@ print(f"System swap (MB): {usedSwapMB}/{totalSwapMB} ({psutil.swap_memory().perc
 
 print("----- BATTERY INFO -----")
 
-# Pseudo-code
-# Detect whether device is plugged in or not
-# If so, try to calculate time until full, except if TypeError. In which case ask the user if they want to wait 1 minute to calculate. If they don't pass
-#If not plugged in, again try to calculate time until empty, except TypeError. In which case ask if they want to wait 1 minute. If not, pass.
-
 if pluggedIn:
     print("Seems like your device is plugged in. Will try to calculate time until full.")
     timeUntilFull = chargeETA(timeUntilFull, pluggedIn)
