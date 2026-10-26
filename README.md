@@ -1,5 +1,6 @@
 THIS IS STILL A DEMO. Started on October 26, 2026.
 NO CODE IS VIBE CODED. It is and will all be human made.
+Tested on MacOS and Windows 11.
 
 Copyright 2026 RunePatch2, a.k.a RunePatch
 
