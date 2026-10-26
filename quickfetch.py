@@ -1,7 +1,8 @@
-import psutil
 import platform
+import psutil # run 'pip install psutil' in VSC terminal.
+import battery # run 'pip install battery' in VSC terminal.
 import time
-import battery
+
 
 def byteToGB(bytes):
     return round(bytes / 1000000000, 2)
