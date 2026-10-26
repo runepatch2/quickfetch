@@ -84,4 +84,5 @@ if device == "Laptop":
         print(f"Status: discharging ({battery.percent()}%). Will try to calculate ETA until empty.")
         print(chargeETA(timeUntilEmpty, pluggedIn))
 
-print("You're using a desktop so there's currently no battery information to give. Will add in the future.")
+else:
+    print("You're using a desktop so there's currently no battery information to give. Will add in the future.")
