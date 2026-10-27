@@ -16,26 +16,36 @@ def secondsToHHMMSS(seconds):
     seconds = round((seconds % 3600) % 60, 2)
     return {"hours": hours, "minutes": minutes, "seconds": seconds}
 
-def chargeETA(timeETA, pluggedIn):
+def chargeETA(pluggedIn):
     startTime = time.time()
-    if pluggedIn: 
-        eta = battery.minutes_to_full()
-    else:
-        eta = battery.minutes_to_empty()
-    try:
-        timeETA = secondsToHHMMSS(eta * 60)
-    except TypeError:
-        if input("Not enough data to calculate ETA. Do you want to wait up to 30 seconds to calculate ETA? (y/n) ").strip().lower() == "y":
-            while timeETA == None:
-                if time.time() - startTime > 30:
-                    timeETA = "TOOK TOO LONG. TERMINATING LOOP"
+    if pluggedIn: eta = battery.minutes_to_full()
+    else: eta = battery.minutes_to_empty()
+    if eta == None: 
+        toWait = input("Not enough data to calculate ETA. Do you wish to wait up to 30 seconds? (y/n): ").strip().lower() == "y"
+    else: toWait = False
+    if toWait:
+        while eta == None:
+            if pluggedIn:
+                try: 
+                    eta = secondsToHHMMSS(battery.minutes_to_full() * 60)
                     break
-                try: timeETA = secondsToHHMMSS(eta * 60)
-                except: 
-                    time.sleep(1)
+                except TypeError:
                     pass
-    return timeETA
-                
+                    
+            else:
+                try:
+                    eta = secondsToHHMMSS(battery.minutes_to_empty() * 60)
+                except TypeError:
+                    pass
+            if time.time() - startTime > 30:
+                print("TOOK TOO LONG. BREAKING LOOP.")
+                break
+
+    return secondsToHHMMSS(eta * 60)
+
+def printETA(eta):
+        if eta == None: print("Not enough data to print ETA")
+        else: print(f"ETA until full charge: {eta}")
 
 release = platform.release()
 system = platform.system()
@@ -51,6 +61,7 @@ usedSwapMB = byteToMB(psutil.swap_memory().used)
 availableRAMGB = byteToGB(psutil.virtual_memory().available)
 totalRAMGB = byteToGB(psutil.virtual_memory().total)
 usedRAMGB = (totalRAMGB - availableRAMGB)
+toWait = False
 
 try:
     pluggedIn = psutil.sensors_battery().power_plugged
@@ -58,10 +69,6 @@ try:
 except AttributeError:
     device = "Desktop"
     pass
-startPercent = 0
-percentDelta = 0.00
-timeUntilFull = None
-timeUntilEmpty = None
 
 print("----- CPU TIME INFO -----")
 print(f"User time: {userTime}")
@@ -76,13 +83,13 @@ print("----- BATTERY INFO -----")
 if device == "Laptop":
     if pluggedIn:
         print(f"Status: charging ({battery.percent()}%). Will try to calculate ETA until full.")
-        timeUntilFull = chargeETA(timeUntilFull, pluggedIn)
-        if timeUntilFull != None: 
-            print(timeUntilFull)
-        else: print("Not enough data to calculate.")
+        eta = chargeETA(pluggedIn)
+        printETA(eta)
+
     else:
         print(f"Status: discharging ({battery.percent()}%). Will try to calculate ETA until empty.")
-        print(chargeETA(timeUntilEmpty, pluggedIn))
+        eta = chargeETA(pluggedIn)
+        printETA(eta)
 
 else:
     print("You're using a desktop so there's currently no battery information to give. Will add in the future.")
