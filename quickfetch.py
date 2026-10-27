@@ -18,34 +18,27 @@ def secondsToHHMMSS(seconds):
 
 def chargeETA(pluggedIn):
     startTime = time.time()
+    
     if pluggedIn: eta = battery.minutes_to_full()
     else: eta = battery.minutes_to_empty()
-    if eta == None: 
-        toWait = input("Not enough data to calculate ETA. Do you wish to wait up to 30 seconds? (y/n): ").strip().lower() == "y"
-    else: toWait = False
-    if toWait:
-        while eta == None:
-            if pluggedIn:
-                try: 
-                    eta = secondsToHHMMSS(battery.minutes_to_full() * 60)
+
+    if eta == None:
+        toWait = input("There's not enough information for ETA. Do you wish to wait up to 30 seconds (y/n): ").strip().lower() == "y"
+        
+        if toWait:
+            while eta == None:
+                if pluggedIn: eta = battery.minutes_to_full()
+                else: eta = battery.minutes_to_empty()
+
+                if time.time() - startTime > 30:
+                    eta = "N/A"
                     break
-                except TypeError:
-                    pass
-                    
-            else:
-                try:
-                    eta = secondsToHHMMSS(battery.minutes_to_empty() * 60)
-                except TypeError:
-                    pass
-            if time.time() - startTime > 30:
-                print("TOOK TOO LONG. BREAKING LOOP.")
-                break
+        else: eta = "N/A"
 
-    return secondsToHHMMSS(eta * 60)
-
-def printETA(eta):
-        if eta == None: print("Not enough data to print ETA")
-        else: print(f"ETA until full charge: {eta}")
+    if eta == "N/A":
+        print("NO ETA COULD BE FOUND")
+    else:
+        return secondsToHHMMSS(eta * 60)
 
 release = platform.release()
 system = platform.system()
@@ -84,12 +77,12 @@ if device == "Laptop":
     if pluggedIn:
         print(f"Status: charging ({battery.percent()}%). Will try to calculate ETA until full.")
         eta = chargeETA(pluggedIn)
-        printETA(eta)
+        if eta != None: print(eta)
 
     else:
         print(f"Status: discharging ({battery.percent()}%). Will try to calculate ETA until empty.")
         eta = chargeETA(pluggedIn)
-        printETA(eta)
+        if eta != None: print(eta)
 
 else:
     print("You're using a desktop so there's currently no battery information to give. Will add in the future.")
